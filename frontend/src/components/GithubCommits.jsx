@@ -30,7 +30,7 @@ const GitHubCommits = () => {
       {loading && <p>Loading...</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
       {!loading && !error && totalCommits !== null && (
-        <NumberTicker value={totalCommits} decimalPlaces={0} />
+        <NumberTicker delay={2} value={totalCommits} decimalPlaces={0} />
       )}
     </div>
   );

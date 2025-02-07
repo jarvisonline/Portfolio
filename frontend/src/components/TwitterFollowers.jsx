@@ -24,7 +24,7 @@ const FollowerTicker = ({ username }) => {
     fetchFollowers();
   }, [username]);
 
-  return <NumberTicker value={followers || 0} decimalPlaces={0} />;
+  return <NumberTicker delay={2} value={followers || 0} decimalPlaces={0} />;
 };
 
 export default FollowerTicker;
