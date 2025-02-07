@@ -6,19 +6,19 @@
 
 @font-face {
   font-family: "Aeonik";
-  src: url("./src/assets/fonts/Aeonik.ttf") format("truetype");
+  src: url("/fonts/Aeonik.ttf") format("truetype");
 }
 @font-face {
   font-family: "Test Sohne";
-  src: url("assets/fonts/test-soehne-breit-buch.woff2") format("woff2");
+  src: url("/fonts/test-soehne-breit-buch.woff2") format("woff2");
 }
 @font-face {
   font-family: "Kalki";
-  src: url("./src/assets/fonts/Kalki.ttf") format("truetype");
+  src: url("/fonts/Kalki.ttf") format("truetype");
 }
 @font-face {
   font-family: "Helvetica";
-  src: url("./src/assets/fonts/helvetica.ttf") format("truetype");
+  src: url("/fonts/helvetica.ttf") format("truetype");
 }
 
 * {
@@ -157,7 +157,6 @@ body {
     height: 500px;
   }
 }
-
 
 .loading-screen {
   @apply fixed top-0 left-0 w-full h-full bg-black text-white pointer-events-none;
