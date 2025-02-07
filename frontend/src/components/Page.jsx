@@ -60,27 +60,29 @@ const Page = () => {
     const scene = new THREE.Scene();
     const simScene = new THREE.Scene();
     const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
     const renderer = new THREE.WebGLRenderer({
       canvas: canvasRef.current,
-      antialias: true,
+      antialias: false, // Reduce GPU load
       alpha: true,
-      powerPreference: "low-power", // Optimize for mobile
-      preserveDrawingBuffer: true,
+      powerPreference: "low-power",
+      preserveDrawingBuffer: false, // Reduce memory usage
     });
 
-    // Set initial size and pixel ratio
-    const pixelRatio = Math.min(window.devicePixelRatio, 2);
+    const pixelRatio = Math.min(window.devicePixelRatio, 1.5);
+    const scaleFactor = 0.8; // Reduce render resolution for performance
+    const width = Math.round(window.innerWidth * pixelRatio * scaleFactor);
+    const height = Math.round(window.innerHeight * pixelRatio * scaleFactor);
+
     renderer.setPixelRatio(pixelRatio);
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(width, height);
 
     const mouse = new THREE.Vector2();
     let frame = 0;
-    const width = window.innerWidth * pixelRatio;
-    const height = window.innerHeight * pixelRatio;
 
     const options = {
       format: THREE.RGBAFormat,
-      type: THREE.FloatType,
+      type: THREE.HalfFloatType || THREE.FloatType, // Optimize memory usage
       minFilter: THREE.LinearFilter,
       magFilter: THREE.LinearFilter,
       stencilBuffer: false,
@@ -120,9 +122,9 @@ const Page = () => {
     scene.add(renderQuad);
 
     const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
     canvas.width = width;
     canvas.height = height;
-    const ctx = canvas.getContext("2d");
 
     const createGradient = () => {
       const gradient = ctx.createLinearGradient(0, 0, 0, height);
@@ -132,29 +134,31 @@ const Page = () => {
       return gradient;
     };
 
-    ctx.fillStyle = createGradient();
-    ctx.fillRect(0, 0, width, height);
+    const updateTextTexture = () => {
+      ctx.fillStyle = createGradient();
+      ctx.fillRect(0, 0, width, height);
 
-    const fontSize = Math.round(
-      window.innerWidth < 640 ? 80 * pixelRatio : 200 * pixelRatio
-    );
-    ctx.fillStyle = "#fef4b8";
-    ctx.font = `bold ${fontSize}px "Test Sohne", sans-serif`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.textRendering = "geometricPrecision";
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = "high";
-    ctx.fillText("MERN DEV", width / 2, height / 2);
+      const fontSize = Math.round(
+        window.innerWidth < 640 ? 60 * pixelRatio : 180 * pixelRatio
+      );
+      ctx.fillStyle = "#fef4b8";
+      ctx.font = `bold ${fontSize}px "Test Sohne", sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("MERN DEV", width / 2, height / 2);
+    };
 
+    updateTextTexture();
     const textTexture = new THREE.CanvasTexture(canvas);
     textTexture.minFilter = THREE.LinearFilter;
     textTexture.magFilter = THREE.LinearFilter;
     textTexture.format = THREE.RGBAFormat;
 
     const handleResize = () => {
-      const newWidth = window.innerWidth * pixelRatio;
-      const newHeight = window.innerHeight * pixelRatio;
+      const newWidth = Math.round(window.innerWidth * pixelRatio * scaleFactor);
+      const newHeight = Math.round(
+        window.innerHeight * pixelRatio * scaleFactor
+      );
 
       renderer.setSize(newWidth, newHeight);
       rtA.setSize(newWidth, newHeight);
@@ -163,40 +167,25 @@ const Page = () => {
 
       canvas.width = newWidth;
       canvas.height = newHeight;
-      ctx.fillStyle = createGradient();
-      ctx.fillRect(0, 0, newWidth, newHeight);
-
-      const newFontSize = Math.round(
-        window.innerWidth < 640 ? 100 * pixelRatio : 250 * pixelRatio
-      );
-      ctx.fillStyle = "#fef4b8";
-      ctx.font = `bold ${newFontSize}px "Test Sohne", sans-serif`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText("MERN DEV", newWidth / 2, newHeight / 2);
+      updateTextTexture();
       textTexture.needsUpdate = true;
     };
 
-    const debouncedResize = (() => {
-      let timeoutId;
-      return function (...args) {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => handleResize.apply(this, args), 100);
+    const onMouseMove = (() => {
+      let rafId;
+      return (e) => {
+        cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(() => {
+          mouse.x = e.clientX * pixelRatio;
+          mouse.y = (window.innerHeight - e.clientY) * pixelRatio;
+        });
       };
     })();
-    window.addEventListener("resize", debouncedResize);
 
-    const onMouseMove = (e) => {
-      mouse.x = e.clientX * pixelRatio;
-      mouse.y = (window.innerHeight - e.clientY) * pixelRatio;
-    };
-
-    const onMouseLeave = () => {
-      mouse.set(0, 0);
-    };
-
-    canvasRef.current.addEventListener("mousemove", onMouseMove);
-    canvasRef.current.addEventListener("mouseleave", onMouseLeave);
+    window.addEventListener("resize", handleResize);
+    canvasRef.current.addEventListener("mousemove", onMouseMove, {
+      passive: true,
+    });
 
     const animate = () => {
       simMaterial.uniforms.frame.value = frame++;
@@ -212,14 +201,10 @@ const Page = () => {
       renderer.setRenderTarget(null);
       renderer.render(scene, camera);
 
-      const temp = rtA;
-      rtA = rtB;
-      rtB = temp;
-
+      [rtA, rtB] = [rtB, rtA]; // Swap render targets
       animationFrameId = requestAnimationFrame(animate);
     };
 
-    // Start animation only when page is visible
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
         animate();
@@ -227,18 +212,16 @@ const Page = () => {
         cancelAnimationFrame(animationFrameId);
       }
     };
-    document.addEventListener("visibilitychange", handleVisibilityChange);
 
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     animate();
 
     return () => {
       cancelAnimationFrame(animationFrameId);
       canvasRef.current.removeEventListener("mousemove", onMouseMove);
-      canvasRef.current.removeEventListener("mouseleave", onMouseLeave);
-      window.removeEventListener("resize", debouncedResize);
+      window.removeEventListener("resize", handleResize);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
 
-      // Clean up Three.js resources
       renderer.dispose();
       rtA.dispose();
       rtB.dispose();
