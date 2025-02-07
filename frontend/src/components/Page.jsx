@@ -157,7 +157,11 @@ const Page = () => {
 
       canvas.width = newWidth;
       canvas.height = newHeight;
-      ctx.fillStyle = "#5dbae5";
+      const gradient = ctx.createLinearGradient(0, 0, 0, height);
+      gradient.addColorStop(0, "#000000");
+      gradient.addColorStop(0.5, "#111111");
+      gradient.addColorStop(1, "#222222");
+      ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, newWidth, newHeight);
 
       const newFontSize = Math.round(
@@ -166,7 +170,7 @@ const Page = () => {
           : 250 * window.devicePixelRatio
       );
       ctx.fillStyle = "#fef4b8";
-      ctx.font = `bold ${newFontSize}px`;
+      ctx.font = `bold ${newFontSize}px "Test Sohne", sans-serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText("MERN DEV", newWidth / 2, newHeight / 2);
