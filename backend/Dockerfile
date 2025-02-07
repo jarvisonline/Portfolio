@@ -1,20 +1,20 @@
-# Use a lightweight Node.js image
+# Use Node.js base image
 FROM node:18
 
-# Set the working directory
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copy dependencies first for caching
+# Copy package.json and package-lock.json first (for better caching)
 COPY package.json package-lock.json ./
 
 # Install dependencies
-RUN npm install --production
+RUN npm install
 
-# Copy the rest of the application files
+# Copy all backend files to the container
 COPY . .
 
-# Expose the backend port
+# Expose port 5000
 EXPOSE 5000
 
-# Start the backend server
+# Command to start the server
 CMD ["node", "server.js"]
