@@ -35,7 +35,13 @@ import GitHubCommits from "./GithubCommits";
 import ShineBorder from "./ui/shine-border";
 import { Tweet } from "react-tweet";
 import Marquee from "./ui/marquee";
-import { FaFile, FaTimesCircle, FaTools, FaUniversity } from "react-icons/fa";
+import {
+  FaArrowDown,
+  FaFile,
+  FaTimesCircle,
+  FaTools,
+  FaUniversity,
+} from "react-icons/fa";
 import ServicesMarquee from "./service";
 import WorkProcessMarquee from "./work";
 import { MorphingTextDemo } from "./Roles";
@@ -49,7 +55,6 @@ const Home = () => {
         trigger: ".main",
         start: "top center",
         end: "bottom center",
-        markers: true,
       },
     });
     timeline.from(".shine-border", {
@@ -243,7 +248,17 @@ const Home = () => {
           </ShineBorder>
 
           <ShineBorder className="shine-border col-span-1 max-sm:col-span-2 max-sm:row-auto md:col-span-3 row-span-3 bg-[#101010] backdrop-blur-md flex items-center justify-center rounded-xl text-white">
-            8
+            <div className="flex flex-col items-center justify-center h-full">
+              <div className="text-2xl font-bold text-[#7b74fc] mb-4">
+                Explore My Work
+              </div>
+              <div className="animate-bounce">
+                <FaArrowDown size={40} color="#7b74fc" />
+              </div>
+              <div className="mt-2 text-sm text-[#999999]">
+                Scroll down to see my projects
+              </div>
+            </div>
           </ShineBorder>
 
           <ShineBorder className="shine-border col-span-1 max-sm:col-span-2 max-sm:row-auto md:col-span-2 row-span-5 bg-[#101010] backdrop-blur-md rounded-xl text-white">

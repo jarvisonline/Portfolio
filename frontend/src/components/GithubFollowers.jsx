@@ -11,7 +11,9 @@ const GitHubFollowers = ({ username }) => {
     const fetchFollowers = async () => {
       try {
         // Pass the username dynamically in the API call
-        const response = await axios.get(`/api/github/${username}`);
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/github/${username}`
+        );
         setFollowers(response.data.followers);
       } catch (err) {
         setError("Failed to fetch GitHub follower data.");

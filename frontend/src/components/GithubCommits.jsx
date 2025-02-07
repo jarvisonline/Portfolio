@@ -10,7 +10,9 @@ const GitHubCommits = () => {
   useEffect(() => {
     const fetchCommits = async () => {
       try {
-        const response = await axios.get("/api/commits");
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/commits`
+        );
         setTotalCommits(response.data.totalCommits);
       } catch (err) {
         setError("Failed to fetch GitHub commits data.");

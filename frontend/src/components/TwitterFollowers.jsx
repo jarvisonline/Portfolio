@@ -10,7 +10,9 @@ const FollowerTicker = ({ username }) => {
   useEffect(() => {
     const fetchFollowers = async () => {
       try {
-        const response = await axios.get(`/api/twitter/${username}`);
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/twitter/${username}`
+        );
         setFollowers(response.data.followers);
       } catch (err) {
         setError("Failed to fetch follower data.");
