@@ -56,33 +56,30 @@ const Page = () => {
   };
 
   useEffect(() => {
-    let animationFrameId;
+    if (window.innerWidth < 640) {
+      return; // Skip the Three.js setup if on mobile
+    }
     const scene = new THREE.Scene();
     const simScene = new THREE.Scene();
     const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-
     const renderer = new THREE.WebGLRenderer({
       canvas: canvasRef.current,
-      antialias: false, // Reduce GPU load
+      antialias: true,
       alpha: true,
-      powerPreference: "low-power",
-      preserveDrawingBuffer: false, // Reduce memory usage
+      preserveDrawingBuffer: true,
     });
 
-    const pixelRatio = Math.min(window.devicePixelRatio, 1.5);
-    const scaleFactor = 0.8; // Reduce render resolution for performance
-    const width = Math.round(window.innerWidth * pixelRatio * scaleFactor);
-    const height = Math.round(window.innerHeight * pixelRatio * scaleFactor);
-
-    renderer.setPixelRatio(pixelRatio);
-    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
 
     const mouse = new THREE.Vector2();
     let frame = 0;
+    const width = window.innerWidth * window.devicePixelRatio;
+    const height = window.innerHeight * window.devicePixelRatio;
 
     const options = {
       format: THREE.RGBAFormat,
-      type: THREE.HalfFloatType || THREE.FloatType, // Optimize memory usage
+      type: THREE.FloatType,
       minFilter: THREE.LinearFilter,
       magFilter: THREE.LinearFilter,
       stencilBuffer: false,
@@ -122,43 +119,39 @@ const Page = () => {
     scene.add(renderQuad);
 
     const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
     canvas.width = width;
     canvas.height = height;
+    const ctx = canvas.getContext("2d");
 
-    const createGradient = () => {
-      const gradient = ctx.createLinearGradient(0, 0, 0, height);
-      gradient.addColorStop(0, "#000000");
-      gradient.addColorStop(0.5, "#111111");
-      gradient.addColorStop(1, "#222222");
-      return gradient;
-    };
+    const gradient = ctx.createLinearGradient(0, 0, 0, height);
+    gradient.addColorStop(0, "#000000");
+    gradient.addColorStop(0.5, "#111111");
+    gradient.addColorStop(1, "#222222");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, width, height);
 
-    const updateTextTexture = () => {
-      ctx.fillStyle = createGradient();
-      ctx.fillRect(0, 0, width, height);
+    const fontSize = Math.round(
+      window.innerWidth < 640
+        ? 80 * window.devicePixelRatio
+        : 200 * window.devicePixelRatio
+    );
+    ctx.fillStyle = "#fef4b8";
+    ctx.font = `bold ${fontSize}px "Test Sohne", sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.textRendering = "geometricPrecision";
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.fillText("MERN DEV", width / 2, height / 2);
 
-      const fontSize = Math.round(
-        window.innerWidth < 640 ? 60 * pixelRatio : 180 * pixelRatio
-      );
-      ctx.fillStyle = "#fef4b8";
-      ctx.font = `bold ${fontSize}px "Test Sohne", sans-serif`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText("MERN DEV", width / 2, height / 2);
-    };
-
-    updateTextTexture();
     const textTexture = new THREE.CanvasTexture(canvas);
     textTexture.minFilter = THREE.LinearFilter;
     textTexture.magFilter = THREE.LinearFilter;
     textTexture.format = THREE.RGBAFormat;
 
-    const handleResize = () => {
-      const newWidth = Math.round(window.innerWidth * pixelRatio * scaleFactor);
-      const newHeight = Math.round(
-        window.innerHeight * pixelRatio * scaleFactor
-      );
+    window.addEventListener("resize", () => {
+      const newWidth = window.innerWidth * window.devicePixelRatio;
+      const newHeight = window.innerHeight * window.devicePixelRatio;
 
       renderer.setSize(newWidth, newHeight);
       rtA.setSize(newWidth, newHeight);
@@ -167,25 +160,37 @@ const Page = () => {
 
       canvas.width = newWidth;
       canvas.height = newHeight;
-      updateTextTexture();
+      const gradient = ctx.createLinearGradient(0, 0, 0, height);
+      gradient.addColorStop(0, "#000000");
+      gradient.addColorStop(0.5, "#111111");
+      gradient.addColorStop(1, "#222222");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, newWidth, newHeight);
+
+      const newFontSize = Math.round(
+        window.innerWidth < 640
+          ? 100 * window.devicePixelRatio
+          : 250 * window.devicePixelRatio
+      );
+      ctx.fillStyle = "#fef4b8";
+      ctx.font = `bold ${newFontSize}px "Test Sohne", sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("MERN DEV", newWidth / 2, newHeight / 2);
       textTexture.needsUpdate = true;
+    });
+
+    const onMouseMove = (e) => {
+      mouse.x = e.clientX * window.devicePixelRatio;
+      mouse.y = (window.innerHeight - e.clientY) * window.devicePixelRatio;
     };
 
-    const onMouseMove = (() => {
-      let rafId;
-      return (e) => {
-        cancelAnimationFrame(rafId);
-        rafId = requestAnimationFrame(() => {
-          mouse.x = e.clientX * pixelRatio;
-          mouse.y = (window.innerHeight - e.clientY) * pixelRatio;
-        });
-      };
-    })();
+    const onMouseLeave = () => {
+      mouse.set(0, 0);
+    };
 
-    window.addEventListener("resize", handleResize);
-    canvasRef.current.addEventListener("mousemove", onMouseMove, {
-      passive: true,
-    });
+    canvasRef.current.addEventListener("mousemove", onMouseMove);
+    canvasRef.current.addEventListener("mouseleave", onMouseLeave);
 
     const animate = () => {
       simMaterial.uniforms.frame.value = frame++;
@@ -201,34 +206,18 @@ const Page = () => {
       renderer.setRenderTarget(null);
       renderer.render(scene, camera);
 
-      [rtA, rtB] = [rtB, rtA]; // Swap render targets
-      animationFrameId = requestAnimationFrame(animate);
+      const temp = rtA;
+      rtA = rtB;
+      rtB = temp;
+
+      requestAnimationFrame(animate);
     };
 
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        animate();
-      } else {
-        cancelAnimationFrame(animationFrameId);
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
     animate();
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
       canvasRef.current.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("resize", handleResize);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-
-      renderer.dispose();
-      rtA.dispose();
-      rtB.dispose();
-      simMaterial.dispose();
-      renderMaterial.dispose();
-      plane.dispose();
-      textTexture.dispose();
+      canvasRef.current.removeEventListener("mouseleave", onMouseLeave);
     };
   }, []);
 
@@ -302,6 +291,22 @@ const Page = () => {
             </button>
           </div>
         </nav>
+        <div className="max-sm:h-screen max-sm:flex max-sm:flex-col max-sm:items-center max-sm:justify-center lg:hidden">
+          <DecryptedText
+            text="MERN STACK DEVELOPER"
+            speed={50}
+            maxIterations={20}
+            sequential={false}
+            useOriginalCharsOnly={false}
+            className="revealed text-5xl sm:text-6xl bg-gradient-to-r from-pink-500 to-amber-500 bg-clip-text text-transparent animate-pulse"
+            parentClassName="cyber-glitch"
+            encryptedClassName="neon-flicker"
+            animateOn="view"
+          />
+          <div className="mt-4 text-sm text-center text-pink-400/70 animate-pulse">
+            Explore the ripple effect — switch to desktop view! ✨
+          </div>
+        </div>
         <footer className="absolute bottom-0 left-0 text-[#fef4b8] w-full p-8 flex justify-between items-end z-10 max-sm:justify-center">
           <DecryptedText
             text="FRONTEND DEVLOPER"
@@ -323,7 +328,7 @@ const Page = () => {
             />
           </div>
         </footer>
-        <div className="relative">
+        <div className="relative max-sm:hidden">
           <canvas
             ref={canvasRef}
             className="absolute top-0 left-0 w-full h-full"

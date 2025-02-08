@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useLayoutEffect } from "react";
 import { HiSquare3Stack3D } from "react-icons/hi2";
 import { SiExpress, SiMongodb } from "react-icons/si";
 import { GiJourney } from "react-icons/gi";
@@ -55,14 +55,31 @@ const Home = () => {
         trigger: ".main",
         start: "top center",
         end: "bottom center",
+        markers: false, // Disable debug markers
+        toggleActions: "play none none none", // Only play on enter
+        preventOverlaps: true, // Prevent multiple triggers
       },
     });
     timeline.from(".shine-border", {
       scale: 0,
       duration: 2,
       ease: "power2.out",
+      force3D: true, // Enable hardware acceleration
     });
   });
+
+  // Optimize mobile layout calculations
+  useLayoutEffect(() => {
+    const handleResize = () => {
+      document.documentElement.style.setProperty(
+        "--vh",
+        `${window.innerHeight * 0.01}px`
+      );
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <div className="bg-[#050505] min-h-screen w-full ">
@@ -154,7 +171,7 @@ const Home = () => {
               <div className="font-manrope flex justify-center gap-2 lg:mt-[2.5rem] max-sm:h-[21.5vh] max-sm:p-10">
                 <FaCodeCommit size={20} color="#7b74fc" />
                 <span className="max-sm:hidden">Github</span>
-                <span className="hidden max-sm:inline">Github Followers</span>
+                <span className="hidden max-sm:inline">Github Commits</span>
               </div>
             </div>
           </ShineBorder>
@@ -193,6 +210,7 @@ const Home = () => {
               <img
                 src="./images/aman.jpeg"
                 alt="Profile"
+                loading="lazy"
                 className="w-24 h-24 rounded-full object-cover filter grayscale"
               />
               <div>
@@ -373,8 +391,12 @@ const Home = () => {
               <FaServicestack size={20} color="#7b74fc" />
               Services
             </div>
-            <ServicesMarquee pauseOnHover={true} />
-            <ServicesMarquee reverse={true} pauseOnHover={true} />
+            <ServicesMarquee pauseOnHover={true} className="[--duration:30s]" />
+            <ServicesMarquee
+              reverse={true}
+              pauseOnHover={true}
+              className="[--duration:30s]"
+            />
           </ShineBorder>
 
           <ShineBorder className="shine-border col-span-1 max-sm:col-span-2 max-sm:row-auto md:col-span-3 row-span-4 bg-[#101010] backdrop-blur-md rounded-xl text-white">
@@ -382,8 +404,12 @@ const Home = () => {
               <FaTools size={20} color="#7b74fc" />
               My Toolkit
             </div>
-            <ToolsMarquee pauseOnHover={true} />
-            <ToolsMarquee reverse={true} pauseOnHover={true} />
+            <ToolsMarquee pauseOnHover={true} className="[--duration:30s]" />
+            <ToolsMarquee
+              reverse={true}
+              pauseOnHover={true}
+              className="[--duration:30s]"
+            />
           </ShineBorder>
         </div>
       </div>

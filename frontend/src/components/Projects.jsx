@@ -122,9 +122,9 @@ const StepsSection = () => {
     });
 
     const getRadius = () => {
-      return window.innerHeight > 700
-        ? window.innerWidth * 7.5
-        : window.innerWidth * 12.5;
+      return window.innerWidth < 640
+        ? window.innerWidth * 12.5
+        : window.innerWidth * 7.5;
     };
     const arcAngle = Math.PI * 0.4;
     const startAngle = Math.PI / 2 - arcAngle / 2;
