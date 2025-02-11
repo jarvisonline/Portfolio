@@ -371,7 +371,7 @@ const Home = () => {
                 <div className="w-[80%] h-[50px] rounded-lg bg-[#191919] flex gap-1 justify-center items-center group">
                   <FaFile size={30} className="mt-1 ml-1" />
                   <a
-                    href="https://drive.google.com/your-resume-link"
+                    href="https://drive.google.com/file/d/1wrou0RnmeAfjrpPvGEsEhHmKX-0UwZUu/view?usp=drive_link"
                     className="text-xl"
                     target="_blank"
                     rel="noopener noreferrer"
